@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CertiScan: Smart Certificate Authentication</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CertiScan</h1>
+            <p>Smart Certificate Authentication Using Machine Learning</p>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <h2>Upload Certificate</h2>
+                <p>Select a PNG, JPG, or PDF file to verify its authenticity.</p>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="file" id="certificate-file" name="certificate" accept=".png, .jpg, .jpeg, .pdf" required>
+                    <button type="submit">Verify Now</button>
+                </form>
+            </div>
+
+            <div id="results-section" class="results-section hidden">
+                <h2>Verification Result</h2>
+                <div id="loader" class="loader hidden"></div>
+                <div id="result-content">
+                    <h3 id="prediction"></h3>
+                    <p><strong>Confidence Score:</strong> <span id="confidence"></span></p>
+                    <p><strong>Analysis Details:</strong> <span id="details"></span></p>
+                </div>
+                 <div id="error-message" class="error hidden"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('certificate-file');
+            if (fileInput.files.length === 0) {
+                alert("Please select a file before verifying.");
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('certificate', fileInput.files[0]);
+
+            const resultsSection = document.getElementById('results-section');
+            const loader = document.getElementById('loader');
+            const resultContent = document.getElementById('result-content');
+            const errorMessage = document.getElementById('error-message');
+            
+            // Show loader and hide previous results/errors
+            resultsSection.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            resultContent.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+
+            try {
+                const response = await fetch('/verify', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                
+                loader.classList.add('hidden');
+
+                if (response.ok) {
+                    // Display results
+                    document.getElementById('prediction').textContent = result.prediction;
+                    document.getElementById('confidence').textContent = result.confidence_score;
+                    document.getElementById('details').textContent = result.details;
+
+                    // Style the prediction text based on the result
+                    const predictionElement = document.getElementById('prediction');
+                    if(result.prediction === 'Authentic') {
+                        predictionElement.className = 'authentic';
+                    } else {
+                        predictionElement.className = 'forged';
+                    }
+
+                    resultContent.classList.remove('hidden');
+                } else {
+                    // Display error message
+                    errorMessage.textContent = 'Error: ' + result.error;
+                    errorMessage.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                loader.classList.add('hidden');
+                errorMessage.textContent = 'An unexpected error occurred. Please try again.';
+                errorMessage.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

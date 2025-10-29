@@ -1,0 +1,15 @@
+# Virtual environment
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Uploaded files (temporary)
+uploads/
+
+# Database file (optional - keep private if needed)
+certiscan.db 
+
+# VS Code settings
+.vscode/

@@ -1,0 +1,6 @@
+Flask
+pytesseract
+Pillow
+PyMuPDF
+werkzeug
+scikit-learn
